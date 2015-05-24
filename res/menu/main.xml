@@ -3,6 +3,11 @@
     tools:context="com.tona.mousebrowther.MainActivity" >
 
     <item
+        android:id="@+id/next"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="次へ"/>
+    <item
         android:id="@+id/reload"
         android:orderInCategory="100"
         android:showAsAction="never"
@@ -32,5 +37,10 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="検索"/>
+    <item
+        android:id="@+id/bookmark"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="ブックマーク"/>
 
 </menu>

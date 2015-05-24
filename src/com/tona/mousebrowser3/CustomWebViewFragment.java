@@ -59,7 +59,7 @@ public class CustomWebViewFragment extends Fragment {
 	private boolean isShowClickLocation = false;
 	private boolean isEnableJavaScript = true;
 	private boolean isFirstView = true;
-	private boolean isReturn = false;
+	private boolean isHistoryTransfer = false;
 
 	private SharedPreferences pref;
 	private Cursor cursor;
@@ -200,8 +200,8 @@ public class CustomWebViewFragment extends Fragment {
 				editForm.setText(url);
 				if (isFirstView) {
 					isFirstView = false;
-				} else if (isReturn) {
-					isReturn = false;
+				} else if (isHistoryTransfer) {
+					isHistoryTransfer = false;
 				} else {
 					((MainActivity) getActivity()).setPagetoList(url);
 				}
@@ -490,8 +490,8 @@ public class CustomWebViewFragment extends Fragment {
 	public EditText getEditForm() {
 		return editForm;
 	}
-	public void setIsReturn(boolean b) {
-		isReturn = b;
+	public void setIsHistoryTransfer(boolean b) {
+		isHistoryTransfer = b;
 	}
 
 }

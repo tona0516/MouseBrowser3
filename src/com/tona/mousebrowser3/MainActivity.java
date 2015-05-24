@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,17 +28,17 @@ import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.Toast;
 public class MainActivity extends FragmentActivity {
 	public static CustomViewPager viewPager;
 	public static DynamicFragmentPagerAdapter adapter;
 
-	//Viewの位置を格納する変数
+	// Viewの位置を格納する変数
 	private static int currentPosition = 0;
 	private static int lastIndex = 0;
 
-	//view命名用
+	// view命名用
 	private static int count = 0;
-
 
 	public static final String HOME = "https://www.google.co.jp/";
 	private MainActivity main;
@@ -73,7 +74,7 @@ public class MainActivity extends FragmentActivity {
 				Log.d("position", "" + position);
 				super.onPageSelected(position);
 				currentPosition = position;
-				sp.edit().putInt("last", position).commit(); //こう書かないとcommitされない
+				sp.edit().putInt("last", position).commit(); // こう書かないとcommitされない
 				CustomWebViewFragment f = adapter.get(currentPosition);
 				if (f.getWebView() != null && !f.getWebView().isFocused()) {
 					f.getWebView().requestFocus();
@@ -91,43 +92,84 @@ public class MainActivity extends FragmentActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		if (id == R.id.reload) {
-			adapter.get(currentPosition).getWebView().reload();
-		} else if (id == R.id.general_settings) {
-			startActivity(new Intent(getApplicationContext(), GeneralPref.class));
-		} else if (id == R.id.cursor_settings) {
-			startActivity(new Intent(getApplicationContext(), Pref.class));
-		} else if (id == R.id.create) {
-			CustomWebViewFragment f = adapter.get(currentPosition);
-			f.turnOffCursor();
-			createFragment(HOME);
-			addPagetoList(HOME);
-		} else if (id == R.id.remove) {
-			removeFragment();
-			removePagetoList();
-		} else if (id == R.id.url_bar) {
-			final EditText e = adapter.get(currentPosition).getEditForm();
-			e.setVisibility(View.VISIBLE);
-			e.requestFocus();
-			e.setSelection(0, e.getText().length());
-			// 遅らせてフォーカスがセットされるのを待つ
-			main.runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					Timer t = new Timer();
-					t.schedule(new TimerTask() {
-						@Override
-						public void run() {
-							InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-							inputMethodManager.showSoftInput(e, InputMethodManager.SHOW_IMPLICIT);
-						}
-					}, 200);
+		switch (id) {
+			case R.id.bookmark :
+				Intent intent = new Intent(Intent.ACTION_CREATE_SHORTCUT);
+				startActivityForResult(intent, 0);
+				break;
+			case R.id.next :
+				ArrayList<String> list = urlList.get(currentPosition);
+				CustomWebViewFragment f2 = adapter.get(currentPosition);
+				int i = indexList.get(currentPosition);
+
+				if (i + 1 < list.size()) {
+					f2.getWebView().loadUrl(list.get(i + 1));
+					indexList.set(currentPosition, i + 1);
+					f2.setIsHistoryTransfer(true);
 				}
-			});
+				break;
+			case R.id.reload :
+				adapter.get(currentPosition).getWebView().reload();
+				break;
+			case R.id.general_settings :
+				startActivity(new Intent(getApplicationContext(), GeneralPref.class));
+				break;
+			case R.id.cursor_settings :
+				startActivity(new Intent(getApplicationContext(), Pref.class));
+				break;
+			case R.id.create :
+				CustomWebViewFragment f = adapter.get(currentPosition);
+				f.turnOffCursor();
+				createFragment(HOME);
+				addPagetoList(HOME);
+				break;
+			case R.id.remove :
+				removeFragment();
+				removePagetoList();
+				break;
+			case R.id.url_bar :
+				final EditText e = adapter.get(currentPosition).getEditForm();
+				e.setVisibility(View.VISIBLE);
+				e.requestFocus();
+				e.setSelection(0, e.getText().length());
+				// 遅らせてフォーカスがセットされるのを待つ
+				main.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Timer t = new Timer();
+						t.schedule(new TimerTask() {
+							@Override
+							public void run() {
+								InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+								inputMethodManager.showSoftInput(e, InputMethodManager.SHOW_IMPLICIT);
+							}
+						}, 200);
+					}
+				});
+				break;
+			default :
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == RESULT_OK) {
+			Intent intent = data.getParcelableExtra(Intent.EXTRA_SHORTCUT_INTENT);
+			String uri = intent.toURI();
+			if (uri.startsWith("http://") || uri.startsWith("https://")) {
+				CustomWebViewFragment f = new CustomWebViewFragment(uri);
+				adapter.add("page" + (count++), f);
+				adapter.notifyDataSetChanged();
+				viewPager.setCurrentItem(adapter.getCount() - 1);
+				addPagetoList(uri);
+			} else {
+				Toast.makeText(main, "不正なURLです", Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
 	public static void createFragment(String url) {
 		if (url == null) {
 			adapter.add("page" + (count++), new CustomWebViewFragment(null));
@@ -154,7 +196,7 @@ public class MainActivity extends FragmentActivity {
 		if (i - 1 > -1) {
 			f.getWebView().loadUrl(list.get(i - 1));
 			indexList.set(currentPosition, i - 1);
-			f.setIsReturn(true);
+			f.setIsHistoryTransfer(true);
 		} else {
 			removeFragment();
 			removePagetoList();
