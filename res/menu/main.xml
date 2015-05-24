@@ -3,19 +3,34 @@
     tools:context="com.tona.mousebrowther.MainActivity" >
 
     <item
-        android:id="@+id/settings"
+        android:id="@+id/reload"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="settings"/>
+        android:title="更新"/>
+    <item
+        android:id="@+id/general_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="一般設定"/>
+    <item
+        android:id="@+id/cursor_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="カーソル設定"/>
     <item
         android:id="@+id/remove"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="remove"/>
+        android:title="タブ削除"/>
     <item
         android:id="@+id/create"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="create"/>
+        android:title="新しいタブ"/>
+    <item
+        android:id="@+id/url_bar"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="検索"/>
 
 </menu>

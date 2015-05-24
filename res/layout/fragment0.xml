@@ -10,7 +10,8 @@
         android:layout_height="wrap_content"
         android:hint="URL or search word "
         android:imeOptions="actionSearch"
-        android:singleLine="true" />
+        android:singleLine="true"
+        android:visibility="gone" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -28,7 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/progress_bar" >
 
-        <requestFocus/>
+        <requestFocus />
     </WebView>
 
     <LinearLayout
@@ -78,12 +79,11 @@
             android:text="OFF" />
 
         <Button
-            android:id="@+id/btn_click"
+            android:id="@+id/btn_menu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/btn_enable"
-            android:text="click"
-            android:visibility="invisible" />
+            android:layout_above="@id/btn_menu"
+            android:text="menu" />
     </RelativeLayout>
 
 </RelativeLayout>

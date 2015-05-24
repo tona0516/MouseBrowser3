@@ -2,7 +2,6 @@ package com.tona.mousebrowser3;
 
 import java.lang.reflect.Field;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,6 +23,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
@@ -46,8 +46,8 @@ public class CustomWebViewFragment extends Fragment {
 	private ProgressBar mProgressBar;
 	private RelativeLayout mLayout;
 	private ImageView ivMouseCursor;
-	private Button btnClick;
 	private ToggleButton btnEnable;
+	private Button btnMenu;
 	private View mViewLeft, mViewRight, mViewBottom, mViewPointer;
 	private EditText editForm;
 
@@ -57,12 +57,15 @@ public class CustomWebViewFragment extends Fragment {
 	private boolean isScrollMode = false;
 	private boolean isNoShowCursorRange = false;
 	private boolean isShowClickLocation = false;
+	private boolean isEnableJavaScript = true;
+	private boolean isFirstView = true;
+	private boolean isReturn = false;
 
 	private SharedPreferences pref;
 	private Cursor cursor;
 	private float downX, downY;
+	private float upX, upY;
 
-	private static final String HOME = "https://www.google.co.jp/";
 	private final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
 
 	private String mUrl = null;
@@ -86,8 +89,14 @@ public class CustomWebViewFragment extends Fragment {
 		mViewBottom = (View) v.findViewById(R.id.view_bottom);
 		mProgressBar = (ProgressBar) v.findViewById(R.id.progress_bar);
 		btnEnable = (ToggleButton) v.findViewById(R.id.btn_enable);
-		btnClick = (Button) v.findViewById(R.id.btn_click);
 		mViewPointer = new PointerView(getActivity());
+		btnMenu = (Button) v.findViewById(R.id.btn_menu);
+		btnMenu.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				getActivity().openOptionsMenu();
+			}
+		});
 		editForm = (EditText) v.findViewById(R.id.form);
 		editForm.setOnKeyListener(new View.OnKeyListener() {
 			@Override
@@ -110,66 +119,66 @@ public class CustomWebViewFragment extends Fragment {
 				return false;
 			}
 		});
+		editForm.setOnFocusChangeListener(new OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
+					editForm.setVisibility(View.GONE);
+				}
+			}
+		});
 		mLayout.addView(mViewPointer);
 
 		btnEnable.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				mViewPointer.invalidate();
-				if (!isCursorEnabled) {
-					btnClick.setVisibility(View.VISIBLE);
-					mWebView.setOnTouchListener(new myOnSetTouchListener());
-					isCursorEnabled = true;
-					btnEnable.setText("ON");
-					createCursorImage();
-					switchViewCursorRange();
-					// onSearchRequested();
-					MainActivity.viewPager.setDisable(true);
-				} else {
-					btnClick.setVisibility(View.INVISIBLE);
-					mWebView.setOnTouchListener(null);
-					isCursorEnabled = false;
-					btnEnable.setText("OFF");
-					mLayout.removeView(ivMouseCursor);
-					switchViewCursorRange();
-					MainActivity.viewPager.setDisable(false);
-				}
-			}
-		});
-
-		btnClick.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				mViewPointer.invalidate();
-				mWebView.setOnTouchListener(null);
-				MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, cursor.getX(), cursor.getY(), 0);
-				mLayout.dispatchTouchEvent(ev);
-				ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, cursor.getX(), cursor.getY(), 0);
-				mLayout.dispatchTouchEvent(ev);
-				mWebView.setOnTouchListener(new myOnSetTouchListener());
-			}
-		});
-
-		btnClick.setOnLongClickListener(new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				mViewPointer.invalidate();
-				mWebView.setOnTouchListener(null);
-				MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, cursor.getX(), cursor.getY(), 0);
-				mLayout.dispatchTouchEvent(ev);
-				ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 1000, MotionEvent.ACTION_UP, cursor.getX(), cursor.getY(), 0);
-				mLayout.dispatchTouchEvent(ev);
-				mWebView.setOnTouchListener(new myOnSetTouchListener());
-				return false;
+				switchCursorRnable();
 			}
 		});
 	}
 
-	@SuppressLint("SetJavaScriptEnabled")
+	private void clickByCursor() {
+		mViewPointer.invalidate();
+		mWebView.setOnTouchListener(null);
+		MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, cursor.getX(), cursor.getY(), 0);
+		mLayout.dispatchTouchEvent(ev);
+		ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, cursor.getX(), cursor.getY(), 0);
+		mLayout.dispatchTouchEvent(ev);
+		mWebView.setOnTouchListener(new myOnSetTouchListener());
+	}
+
+	private void switchCursorRnable() {
+		if (!isCursorEnabled) {
+			turnOnCursor();
+		} else {
+			turnOffCursor();
+		}
+	}
+
+	public void turnOnCursor() {
+		mViewPointer.invalidate();
+		mWebView.setOnTouchListener(new myOnSetTouchListener());
+		isCursorEnabled = true;
+		btnEnable.setText("ON");
+		createCursorImage();
+		switchViewCursorRange();
+		// onSearchRequested();
+		MainActivity.viewPager.setDisable(true);
+	}
+
+	public void turnOffCursor() {
+		mViewPointer.invalidate();
+		mWebView.setOnTouchListener(null);
+		isCursorEnabled = false;
+		btnEnable.setText("OFF");
+		mLayout.removeView(ivMouseCursor);
+		switchViewCursorRange();
+		MainActivity.viewPager.setDisable(false);
+	}
+
 	private void initWebView(View v) {
 		mWebView = (WebView) v.findViewById(R.id.webview);
 		WebSettings settings = mWebView.getSettings();
-		settings.setJavaScriptEnabled(true);
 		settings.setUseWideViewPort(true);
 
 		// マルチタッチズームの有効
@@ -189,6 +198,13 @@ public class CustomWebViewFragment extends Fragment {
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				super.onPageStarted(view, url, favicon);
 				editForm.setText(url);
+				if (isFirstView) {
+					isFirstView = false;
+				} else if (isReturn) {
+					isReturn = false;
+				} else {
+					((MainActivity) getActivity()).setPagetoList(url);
+				}
 			}
 		});
 		mWebView.setWebChromeClient(new WebChromeClient() {
@@ -250,7 +266,7 @@ public class CustomWebViewFragment extends Fragment {
 			if (mUrl != null) {
 				mWebView.loadUrl(mUrl);
 			} else {
-				mWebView.loadUrl(HOME);
+				mWebView.loadUrl(MainActivity.HOME);
 			}
 		}
 	}
@@ -310,6 +326,15 @@ public class CustomWebViewFragment extends Fragment {
 					break;
 				case MotionEvent.ACTION_UP :
 					isScrollMode = false;
+					upX = event.getX();
+					upY = event.getY();
+					float absX = Math.abs(downX - upX);
+					float absY = Math.abs(downY - upY);
+					Log.d("ABS", absX + "," + absY);
+					if (absX < 10 && absY < 10) {
+						clickByCursor();
+						return true;
+					}
 					return false;
 				default :
 					break;
@@ -362,9 +387,11 @@ public class CustomWebViewFragment extends Fragment {
 	private void readPreference() {
 		cursor.setV(Float.parseFloat(pref.getString("velocity", "1.0")));
 		cursor.setSizeRate(Float.parseFloat(pref.getString("size_rate", "1.0")));
-		cursor.setOperationRange(pref.getString("range", "right"));
+		cursor.setOperationRange(pref.getString("range", "bottom"));
 		isNoShowCursorRange = pref.getBoolean("view_cursor_range", false);
 		isShowClickLocation = pref.getBoolean("click_location", false);
+		isEnableJavaScript = pref.getBoolean("enable_javascript", true);
+		mWebView.getSettings().setJavaScriptEnabled(isEnableJavaScript);
 	}
 
 	@Override
@@ -458,6 +485,13 @@ public class CustomWebViewFragment extends Fragment {
 
 	public WebView getWebView() {
 		return mWebView;
+	}
+
+	public EditText getEditForm() {
+		return editForm;
+	}
+	public void setIsReturn(boolean b) {
+		isReturn = b;
 	}
 
 }
