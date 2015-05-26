@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,7 +24,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -94,8 +92,14 @@ public class MainActivity extends FragmentActivity {
 		int id = item.getItemId();
 		switch (id) {
 			case R.id.bookmark :
-				Intent intent = new Intent(Intent.ACTION_CREATE_SHORTCUT);
-				startActivityForResult(intent, 0);
+				Intent intent2 = new Intent(Intent.ACTION_CREATE_SHORTCUT);
+				startActivityForResult(intent2, 0);
+				break;
+			case R.id.bookmark_add :
+				Intent intent = new Intent(Intent.ACTION_INSERT , android.provider.Browser.BOOKMARKS_URI);
+				intent.putExtra("title", adapter.get(currentPosition).getWebView().getTitle());
+				intent.putExtra("url", adapter.get(currentPosition).getWebView().getUrl());
+				startActivity(intent);
 				break;
 			case R.id.next :
 				ArrayList<String> list = urlList.get(currentPosition);

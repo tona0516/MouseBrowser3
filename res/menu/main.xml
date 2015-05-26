@@ -41,6 +41,11 @@
         android:id="@+id/bookmark"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="ブックマーク"/>
+        android:title="ブックマーク一覧"/>
+    <item
+        android:id="@+id/bookmark_add"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="ブックマーク登録"/>
 
 </menu>
