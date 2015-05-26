@@ -17,6 +17,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -39,6 +40,7 @@ public class MainActivity extends FragmentActivity {
 	private static int count = 0;
 
 	public static final String HOME = "https://www.google.co.jp/";
+	public static final String ROOTPATH = Environment.getExternalStorageDirectory().getPath()+"/MouseBrowser/";
 	private MainActivity main;
 
 	private ArrayList<ArrayList<String>> urlList;

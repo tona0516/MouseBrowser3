@@ -1,18 +1,27 @@
 package com.tona.mousebrowser3;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -38,6 +47,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 public class CustomWebViewFragment extends Fragment {
 
@@ -227,7 +237,65 @@ public class CustomWebViewFragment extends Fragment {
 				switch (htr.getType()) {
 					case HitTestResult.IMAGE_TYPE :
 						AlertDialog.Builder alertDlg = new AlertDialog.Builder(getActivity());
-						alertDlg.setTitle("画像押下！");
+						alertDlg.setTitle("画像");
+						alertDlg.setMessage("保存しますか？");
+						alertDlg.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+									@Override
+									protected Boolean doInBackground(Void[] params) {
+										return onDownload(htr.getExtra());
+									}
+									protected boolean onDownload(String url) {
+										try {
+											File root = new File(MainActivity.ROOTPATH);
+											if (!root.exists()) {
+												root.mkdir();
+											}
+
+											Date mDate = new Date();
+											SimpleDateFormat fileNameDate = new SimpleDateFormat("yyyyMMdd_HHmmss");
+											String fileName = fileNameDate.format(mDate) + ".jpg";
+											String AttachName = root.getAbsolutePath() + "/" + fileName;
+
+											// 出力ストリーム
+											FileOutputStream out = new FileOutputStream(AttachName);
+
+											// 入力ストリームで画像を読み込む
+											URL mUrl = new URL(url);
+											InputStream istream = mUrl.openStream();
+
+											// 読み込んだファイルをビットマップに変換
+											Bitmap oBmp = BitmapFactory.decodeStream(istream);
+											// 保存
+											oBmp.compress(CompressFormat.JPEG, 100, out);
+											// 終了処理
+											out.flush();
+											out.close();
+											return true;
+										} catch (Exception e) {
+											e.printStackTrace();
+										}
+										return false;
+									}
+
+									protected void onPostExecute(Boolean result) {
+										if(result)
+											Toast.makeText(getActivity(), "保存しました", Toast.LENGTH_SHORT).show();
+										else
+											Toast.makeText(getActivity(), "失敗しました", Toast.LENGTH_SHORT).show();
+									};
+								};
+								task.execute();
+
+							}
+						});
+						alertDlg.setNegativeButton("No", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+							}
+						});
 						alertDlg.show();
 						return true;
 					case HitTestResult.SRC_IMAGE_ANCHOR_TYPE :
