@@ -39,12 +39,20 @@ public class MainActivity extends FragmentActivity {
 	// view命名用
 	private static int count = 0;
 
+	// デフォルトのHP
 	public static final String DEFAULT_HOME = "https://www.google.co.jp/";
-	public static final String ROOTPATH = Environment.getExternalStorageDirectory().getPath()+"/MouseBrowser/";
+
+	// 画像・キャッシュを保存する際のパス
+	public static final String ROOTPATH = Environment.getExternalStorageDirectory().getPath() + "/MouseBrowser/";
+
+	// 他クラスで使用する際のMainActivity変数
 	private MainActivity main;
 
+	// タブの状態保存のURL＆インデックスリスト
 	private ArrayList<ArrayList<String>> urlList;
 	private ArrayList<Integer> indexList;
+
+	// ユーザ設定保存変数
 	private SharedPreferences sp;
 
 	@Override
@@ -52,9 +60,16 @@ public class MainActivity extends FragmentActivity {
 		super.onCreate(null);
 		setContentView(R.layout.activity_main);
 		main = this;
-		readHistoryList();
 		sp = PreferenceManager.getDefaultSharedPreferences(this);
-		viewPager = (CustomViewPager) findViewById(R.id.pager);
+		initializeAdapter();
+		initializeViewPager();
+	}
+
+	/**
+	 * 閲覧履歴があればその状態を読み込み、Adapterに反映する
+	 */
+	private void initializeAdapter() {
+		readHistoryList();
 		adapter = new DynamicFragmentPagerAdapter(getSupportFragmentManager());
 		if (urlList.isEmpty()) {
 			adapter.add("page" + (count++), new CustomWebViewFragment(sp.getString("homepage", DEFAULT_HOME)));
@@ -66,6 +81,13 @@ public class MainActivity extends FragmentActivity {
 			}
 			lastIndex = sp.getInt("last", 0);
 		}
+	}
+
+	/**
+	 * AdapterをViwePagerに反映
+	 */
+	private void initializeViewPager() {
+		viewPager = (CustomViewPager) findViewById(R.id.pager);
 		viewPager.setAdapter(adapter);
 		viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
@@ -82,12 +104,22 @@ public class MainActivity extends FragmentActivity {
 		});
 		viewPager.setCurrentItem(lastIndex);
 	}
+
+	/**
+	 * メニューの作成
+	 * @param menu
+	 * @return
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-
+	/**
+	 * メニューがクリックされたときの処理の振り分け
+	 * @param item
+	 * @return
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
@@ -97,7 +129,7 @@ public class MainActivity extends FragmentActivity {
 				startActivityForResult(intent2, 0);
 				break;
 			case R.id.bookmark_add :
-				Intent intent = new Intent(Intent.ACTION_INSERT , android.provider.Browser.BOOKMARKS_URI);
+				Intent intent = new Intent(Intent.ACTION_INSERT, android.provider.Browser.BOOKMARKS_URI);
 				intent.putExtra("title", adapter.get(currentPosition).getWebView().getTitle());
 				intent.putExtra("url", adapter.get(currentPosition).getWebView().getUrl());
 				startActivity(intent);
@@ -157,7 +189,12 @@ public class MainActivity extends FragmentActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-
+	/**
+	 * ブックマークを呼び出して、選択した項目のURLを取得し表示する
+	 * @param requestCode
+	 * @param resultCode
+	 * @param data
+	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
@@ -175,6 +212,11 @@ public class MainActivity extends FragmentActivity {
 			}
 		}
 	}
+
+	/**
+	 * 新しいタブを作成する
+	 * @param url
+	 */
 	public static void createFragment(String url) {
 		if (url == null) {
 			adapter.add("page" + (count++), new CustomWebViewFragment(null));
@@ -186,6 +228,9 @@ public class MainActivity extends FragmentActivity {
 		viewPager.setOffscreenPageLimit(adapter.getCount());
 	}
 
+	/**
+	 * 現在のタブを削除する
+	 */
 	public static void removeFragment() {
 		if (adapter.getCount() != 1) {
 			adapter.remove(currentPosition);
@@ -194,6 +239,9 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 
+	/**
+	 * バックボタンが押下された時の挙動
+	 */
 	@Override
 	public void onBackPressed() {
 		ArrayList<String> list = urlList.get(currentPosition);
@@ -217,6 +265,11 @@ public class MainActivity extends FragmentActivity {
 		Log.d("indexList", indexList + "");
 		return;
 	}
+
+	/**
+	 * タブが追加されたら履歴に保存する
+	 * @param url
+	 */
 	private void addPagetoList(String url) {
 		ArrayList<String> list = new ArrayList<String>();
 		list.add(url);
@@ -225,6 +278,10 @@ public class MainActivity extends FragmentActivity {
 		writeHistoryList();
 	}
 
+	/**
+	 * 表示が変更されたら履歴に追加する
+	 * @param url
+	 */
 	public void setPagetoList(String url) {
 		ArrayList<String> list = urlList.get(currentPosition);
 		int i = indexList.get(currentPosition);
@@ -239,12 +296,18 @@ public class MainActivity extends FragmentActivity {
 		writeHistoryList();
 	}
 
+	/**
+	 * タブが削除されたら履歴を消す
+	 */
 	private void removePagetoList() {
 		urlList.remove(currentPosition);
 		indexList.remove(currentPosition);
 		writeHistoryList();
 	}
 
+	/**
+	 * ファイルに履歴を書き込む
+	 */
 	private void writeHistoryList() {
 		Log.d("indexList", indexList + "");
 		ObjectOutputStream oos = null;
@@ -277,6 +340,9 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 
+	/**
+	 * 起動時に履歴を読み込む
+	 */
 	private void readHistoryList() {
 		ObjectInputStream ois = null;
 		FileInputStream fis = null;
