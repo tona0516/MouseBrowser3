@@ -68,6 +68,7 @@ public class CustomWebViewFragment extends Fragment {
 	private boolean isNoShowCursorRange = false;
 	private boolean isShowClickLocation = false;
 	private boolean isEnableJavaScript = true;
+	private boolean isEnableCache = true;
 	private boolean isFirstView = true;
 	private boolean isHistoryTransfer = false;
 
@@ -281,7 +282,7 @@ public class CustomWebViewFragment extends Fragment {
 									}
 
 									protected void onPostExecute(Boolean result) {
-										if(result)
+										if (result)
 											Toast.makeText(getActivity(), "保存しました", Toast.LENGTH_SHORT).show();
 										else
 											Toast.makeText(getActivity(), "失敗しました", Toast.LENGTH_SHORT).show();
@@ -334,7 +335,7 @@ public class CustomWebViewFragment extends Fragment {
 			if (mUrl != null) {
 				mWebView.loadUrl(mUrl);
 			} else {
-				mWebView.loadUrl(MainActivity.HOME);
+				mWebView.loadUrl(pref.getString("homepage", MainActivity.DEFAULT_HOME));
 			}
 		}
 	}
@@ -460,6 +461,14 @@ public class CustomWebViewFragment extends Fragment {
 		isShowClickLocation = pref.getBoolean("click_location", false);
 		isEnableJavaScript = pref.getBoolean("enable_javascript", true);
 		mWebView.getSettings().setJavaScriptEnabled(isEnableJavaScript);
+		isEnableCache = pref.getBoolean("enable_cache", true);
+		mWebView.getSettings().setAppCacheEnabled(isEnableCache);
+		if (isEnableCache) {
+			mWebView.getSettings().setAppCachePath(MainActivity.ROOTPATH + "cache/");
+		}else{
+			mWebView.clearCache(true);
+		}
+
 	}
 
 	@Override

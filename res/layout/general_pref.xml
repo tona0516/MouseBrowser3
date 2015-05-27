@@ -5,6 +5,17 @@
         android:defaultValue="true"
         android:disableDependentsState="true"
         android:key="enable_javascript"
-        android:title="JavaScripを有効にする" />
+        android:title="JavaScriptを有効にする" />
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:disableDependentsState="true"
+        android:key="enable_cache"
+        android:title="キャッシュを有効にする" />
+
+    <EditTextPreference
+        android:inputType="text"
+        android:key="homepage"
+        android:title="ホームページの設定" />
 
 </PreferenceScreen>

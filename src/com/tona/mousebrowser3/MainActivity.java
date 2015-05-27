@@ -39,7 +39,7 @@ public class MainActivity extends FragmentActivity {
 	// view命名用
 	private static int count = 0;
 
-	public static final String HOME = "https://www.google.co.jp/";
+	public static final String DEFAULT_HOME = "https://www.google.co.jp/";
 	public static final String ROOTPATH = Environment.getExternalStorageDirectory().getPath()+"/MouseBrowser/";
 	private MainActivity main;
 
@@ -55,11 +55,10 @@ public class MainActivity extends FragmentActivity {
 		readHistoryList();
 		sp = PreferenceManager.getDefaultSharedPreferences(this);
 		viewPager = (CustomViewPager) findViewById(R.id.pager);
-		viewPager.setOffscreenPageLimit(5);
 		adapter = new DynamicFragmentPagerAdapter(getSupportFragmentManager());
 		if (urlList.isEmpty()) {
-			adapter.add("page" + (count++), new CustomWebViewFragment(HOME));
-			addPagetoList(HOME);
+			adapter.add("page" + (count++), new CustomWebViewFragment(sp.getString("homepage", DEFAULT_HOME)));
+			addPagetoList(sp.getString("hompage", DEFAULT_HOME));
 		} else {
 			for (int i = 0; i < urlList.size(); i++) {
 				CustomWebViewFragment f = new CustomWebViewFragment(urlList.get(i).get(indexList.get(i)));
@@ -126,8 +125,8 @@ public class MainActivity extends FragmentActivity {
 			case R.id.create :
 				CustomWebViewFragment f = adapter.get(currentPosition);
 				f.turnOffCursor();
-				createFragment(HOME);
-				addPagetoList(HOME);
+				createFragment(sp.getString("homepage", DEFAULT_HOME));
+				addPagetoList(sp.getString("homepage", DEFAULT_HOME));
 				break;
 			case R.id.remove :
 				removeFragment();
@@ -184,12 +183,14 @@ public class MainActivity extends FragmentActivity {
 		}
 		adapter.notifyDataSetChanged();
 		viewPager.setCurrentItem(adapter.getCount() - 1);
+		viewPager.setOffscreenPageLimit(adapter.getCount());
 	}
 
 	public static void removeFragment() {
 		if (adapter.getCount() != 1) {
 			adapter.remove(currentPosition);
 			adapter.notifyDataSetChanged();
+			viewPager.setOffscreenPageLimit(adapter.getCount());
 		}
 	}
 
