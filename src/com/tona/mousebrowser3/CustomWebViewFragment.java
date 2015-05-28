@@ -61,8 +61,6 @@ public class CustomWebViewFragment extends Fragment {
 	private View mViewLeft, mViewRight, mViewBottom, mViewPointer;
 	private EditText editForm;
 
-	private Bundle mWebViewBundle;
-
 	private boolean isCursorEnabled = false;
 	private boolean isScrollMode = false;
 	private boolean isNoShowCursorRange = false;
@@ -80,6 +78,8 @@ public class CustomWebViewFragment extends Fragment {
 	private final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
 
 	private String mUrl = null;
+	private Bundle mWebViewBundle;
+	private CustomWebViewFragment me;
 
 	public CustomWebViewFragment(String url) {
 		this.mUrl = url;
@@ -88,6 +88,7 @@ public class CustomWebViewFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment0, null);
 		pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		me = this;
 		initComponent(v);
 		initWebView(v);
 		return v;
@@ -329,14 +330,10 @@ public class CustomWebViewFragment extends Fragment {
 				alertDlg.show();
 			}
 		});
-		if (mWebViewBundle != null) {
-			mWebView.restoreState(mWebViewBundle);
+		if (mUrl != null) {
+			mWebView.loadUrl(mUrl);
 		} else {
-			if (mUrl != null) {
-				mWebView.loadUrl(mUrl);
-			} else {
-				mWebView.loadUrl(pref.getString("homepage", MainActivity.DEFAULT_HOME));
-			}
+			mWebView.loadUrl(pref.getString("homepage", MainActivity.DEFAULT_HOME));
 		}
 	}
 
@@ -436,9 +433,16 @@ public class CustomWebViewFragment extends Fragment {
 	public void onResume() {
 		super.onResume();
 		Log.d("LifeCycle", "onResume");
-		Point p = getWindowSize();
-		cursor = new Cursor(p.x, p.y);
-		mViewBottom.setY(cursor.getDisplaySize().y * 2 / 3);
+		if (mWebViewBundle != null) {
+			Log.d("TAG", "restore");
+			mWebView.restoreState(mWebViewBundle);
+		}
+		if (isFirstView) {
+			Log.d("LifeCycle", "onResume");
+			Point p = getWindowSize();
+			cursor = new Cursor(p.x, p.y);
+			mViewBottom.setY(cursor.getDisplaySize().y * 2 / 3);
+		}
 		readPreference();
 		switchViewCursorRange();
 		createCursorImage();
@@ -465,7 +469,7 @@ public class CustomWebViewFragment extends Fragment {
 		mWebView.getSettings().setAppCacheEnabled(isEnableCache);
 		if (isEnableCache) {
 			mWebView.getSettings().setAppCachePath(MainActivity.ROOTPATH + "cache/");
-		}else{
+		} else {
 			mWebView.clearCache(true);
 		}
 
@@ -517,9 +521,9 @@ public class CustomWebViewFragment extends Fragment {
 
 	/**
 	 * クリック位置を表示するView
-	 *
+	 * 
 	 * @author meem
-	 *
+	 * 
 	 */
 	private class PointerView extends View {
 		Paint paint;
@@ -547,14 +551,6 @@ public class CustomWebViewFragment extends Fragment {
 	}
 
 	@Override
-	public void onPause() {
-		super.onPause();
-		if (mWebViewBundle == null)
-			mWebViewBundle = new Bundle();
-		mWebView.saveState(mWebViewBundle);
-	}
-
-	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		MainActivity.viewPager.setDisable(false);
@@ -569,6 +565,11 @@ public class CustomWebViewFragment extends Fragment {
 	}
 	public void setIsHistoryTransfer(boolean b) {
 		isHistoryTransfer = b;
+	}
+
+	public void save() {
+		mWebViewBundle = new Bundle();
+		mWebView.saveState(mWebViewBundle);
 	}
 
 }

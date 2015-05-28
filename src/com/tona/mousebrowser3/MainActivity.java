@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -35,6 +36,7 @@ public class MainActivity extends FragmentActivity {
 	// Viewの位置を格納する変数
 	private static int currentPosition = 0;
 	private static int lastIndex = 0;
+	private static boolean isRemove = false;
 
 	// view命名用
 	private static int count = 0;
@@ -57,6 +59,7 @@ public class MainActivity extends FragmentActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Log.d("LifeCycle","OnCreate");
 		super.onCreate(null);
 		setContentView(R.layout.activity_main);
 		main = this;
@@ -94,6 +97,10 @@ public class MainActivity extends FragmentActivity {
 			public void onPageSelected(int position) {
 				Log.d("position", "" + position);
 				super.onPageSelected(position);
+				if(currentPosition < adapter.getCount()){
+					Log.d("TAG", "save");
+					adapter.get(currentPosition).save();
+				}
 				currentPosition = position;
 				sp.edit().putInt("last", position).commit(); // こう書かないとcommitされない
 				CustomWebViewFragment f = adapter.get(currentPosition);
@@ -103,10 +110,12 @@ public class MainActivity extends FragmentActivity {
 			}
 		});
 		viewPager.setCurrentItem(lastIndex);
+		currentPosition = lastIndex;
 	}
 
 	/**
 	 * メニューの作成
+	 *
 	 * @param menu
 	 * @return
 	 */
@@ -117,6 +126,7 @@ public class MainActivity extends FragmentActivity {
 	}
 	/**
 	 * メニューがクリックされたときの処理の振り分け
+	 *
 	 * @param item
 	 * @return
 	 */
@@ -191,6 +201,7 @@ public class MainActivity extends FragmentActivity {
 	}
 	/**
 	 * ブックマークを呼び出して、選択した項目のURLを取得し表示する
+	 *
 	 * @param requestCode
 	 * @param resultCode
 	 * @param data
@@ -215,6 +226,7 @@ public class MainActivity extends FragmentActivity {
 
 	/**
 	 * 新しいタブを作成する
+	 *
 	 * @param url
 	 */
 	public static void createFragment(String url) {
@@ -268,6 +280,7 @@ public class MainActivity extends FragmentActivity {
 
 	/**
 	 * タブが追加されたら履歴に保存する
+	 *
 	 * @param url
 	 */
 	private void addPagetoList(String url) {
@@ -280,6 +293,7 @@ public class MainActivity extends FragmentActivity {
 
 	/**
 	 * 表示が変更されたら履歴に追加する
+	 *
 	 * @param url
 	 */
 	public void setPagetoList(String url) {
