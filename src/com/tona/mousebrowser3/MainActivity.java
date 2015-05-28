@@ -59,7 +59,7 @@ public class MainActivity extends FragmentActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Log.d("LifeCycle","OnCreate");
+		Log.d("LifeCycle", "OnCreate");
 		super.onCreate(null);
 		setContentView(R.layout.activity_main);
 		main = this;
@@ -97,7 +97,7 @@ public class MainActivity extends FragmentActivity {
 			public void onPageSelected(int position) {
 				Log.d("position", "" + position);
 				super.onPageSelected(position);
-				if(currentPosition < adapter.getCount()){
+				if (currentPosition < adapter.getCount()) {
 					Log.d("TAG", "save");
 					adapter.get(currentPosition).save();
 				}
