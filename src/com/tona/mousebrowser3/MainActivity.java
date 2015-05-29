@@ -53,7 +53,6 @@ public class MainActivity extends FragmentActivity {
 	// タブの状態保存のURL＆インデックスリスト
 	private ArrayList<ArrayList<String>> urlList;
 	private ArrayList<Integer> indexList;
-	private ArrayList<Pair<Integer, Integer>> scrollList;
 
 	// ユーザ設定保存変数
 	private SharedPreferences sp;
@@ -78,7 +77,6 @@ public class MainActivity extends FragmentActivity {
 		if (urlList.isEmpty()) {
 			adapter.add("page" + (count++), new CustomWebViewFragment(sp.getString("homepage", DEFAULT_HOME)));
 			addPagetoList(sp.getString("hompage", DEFAULT_HOME));
-			scrollList.add(new Pair<Integer, Integer>(0, 0));
 		} else {
 			for (int i = 0; i < urlList.size(); i++) {
 				CustomWebViewFragment f = new CustomWebViewFragment(urlList.get(i).get(indexList.get(i)));
@@ -274,8 +272,6 @@ public class MainActivity extends FragmentActivity {
 			}
 			finish();
 		}
-		writeHistoryList();
-		Log.d("indexList", indexList + "");
 		return;
 	}
 
@@ -289,18 +285,9 @@ public class MainActivity extends FragmentActivity {
 		list.add(url);
 		urlList.add(list);
 		indexList.add(0);
-		scrollList.add(new Pair<Integer, Integer>(0, 0));
 		writeHistoryList();
 	}
 
-	public void restoreScrollPosition(int index) {
-		Pair<Integer, Integer> p = scrollList.get(index);
-		adapter.get(index).getWebView().scrollTo(p.first, p.second);
-	}
-
-	public void setScrollList(int position, int x, int y) {
-		scrollList.set(position, new Pair<Integer, Integer>(x, y));
-	}
 	/**
 	 * 表示が変更されたら履歴に追加する
 	 *
@@ -326,7 +313,6 @@ public class MainActivity extends FragmentActivity {
 	private void removePagetoList() {
 		urlList.remove(currentPosition);
 		indexList.remove(currentPosition);
-		scrollList.remove(currentPosition);
 		writeHistoryList();
 	}
 
@@ -339,15 +325,11 @@ public class MainActivity extends FragmentActivity {
 		FileOutputStream fos = null;
 		ObjectOutputStream oos2 = null;
 		FileOutputStream fos2 = null;
-		ObjectOutputStream oos3 = null;
-		FileOutputStream fos3 = null;
 		try {
 			fos = openFileOutput("url.obj", MODE_PRIVATE);
 			oos = new ObjectOutputStream(fos);
 			fos2 = openFileOutput("index.obj", MODE_PRIVATE);
 			oos2 = new ObjectOutputStream(fos2);
-			fos3 = openFileOutput("scroll.obj", MODE_PRIVATE);
-			oos3 = new ObjectOutputStream(fos3);
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		} catch (IOException e1) {
@@ -356,7 +338,6 @@ public class MainActivity extends FragmentActivity {
 		try {
 			oos.writeObject(urlList);
 			oos2.writeObject(indexList);
-			oos3.writeObject(scrollList);
 			fos.flush();
 			fos.close();
 			oos.flush();
@@ -365,10 +346,6 @@ public class MainActivity extends FragmentActivity {
 			fos2.close();
 			oos2.flush();
 			oos2.close();
-			fos3.flush();
-			fos3.close();
-			oos3.flush();
-			oos3.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -382,15 +359,11 @@ public class MainActivity extends FragmentActivity {
 		FileInputStream fis = null;
 		ObjectInputStream ois2 = null;
 		FileInputStream fis2 = null;
-		ObjectInputStream ois3 = null;
-		FileInputStream fis3 = null;
 		try {
 			fis = openFileInput("url.obj");
 			ois = new ObjectInputStream(fis);
 			fis2 = openFileInput("index.obj");
 			ois2 = new ObjectInputStream(fis2);
-			fis3 = openFileInput("scroll.obj");
-			ois3 = new ObjectInputStream(fis3);
 		} catch (StreamCorruptedException e1) {
 			e1.printStackTrace();
 		} catch (FileNotFoundException e1) {
@@ -402,13 +375,10 @@ public class MainActivity extends FragmentActivity {
 			try {
 				urlList = (ArrayList<ArrayList<String>>) ois.readObject();
 				indexList = (ArrayList<Integer>) ois2.readObject();
-				scrollList = (ArrayList<Pair<Integer, Integer>>) ois3.readObject();
 				fis.close();
 				ois.close();
 				fis2.close();
 				ois2.close();
-				fis3.close();
-				ois3.close();
 			} catch (OptionalDataException e) {
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
@@ -421,7 +391,5 @@ public class MainActivity extends FragmentActivity {
 			urlList = new ArrayList<ArrayList<String>>();
 		if (indexList == null)
 			indexList = new ArrayList<Integer>();
-		if (scrollList == null)
-			scrollList = new ArrayList<Pair<Integer, Integer>>();
 	}
 }

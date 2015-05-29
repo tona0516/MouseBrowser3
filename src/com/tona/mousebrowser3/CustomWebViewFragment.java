@@ -209,6 +209,7 @@ public class CustomWebViewFragment extends Fragment {
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				super.onPageStarted(view, url, favicon);
+				Log.d("TAG", "onPageStarted");
 				editForm.setText(url);
 				if (isFirstView) {
 					isFirstView = false;
@@ -216,6 +217,25 @@ public class CustomWebViewFragment extends Fragment {
 					isHistoryTransfer = false;
 				} else {
 					((MainActivity) getActivity()).setPagetoList(url);
+				}
+			}
+
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				// TODO 自動生成されたメソッド・スタブ
+				super.onPageFinished(view, url);
+				Log.d("TAG", "onPageFniinished");
+				if (mWebViewBundle != null) {
+					final int x = mWebViewBundle.getInt("x", 0);
+					final int y = mWebViewBundle.getInt("y", 0);
+					Log.d("TAG", x + "," + y);
+					mWebView.post(new Runnable() {
+						@Override
+						public void run() {
+							mWebView.scrollTo(x, y);
+							Log.d("TAG", "scroll");
+						}
+					});
 				}
 			}
 		});
@@ -337,7 +357,6 @@ public class CustomWebViewFragment extends Fragment {
 			mWebView.loadUrl(pref.getString("homepage", MainActivity.DEFAULT_HOME));
 		}
 	}
-
 	class myOnSetTouchListener implements View.OnTouchListener {
 		@Override
 		public boolean onTouch(View view, MotionEvent event) {
@@ -434,6 +453,9 @@ public class CustomWebViewFragment extends Fragment {
 	public void onResume() {
 		super.onResume();
 		Log.d("LifeCycle", "onResume");
+		if (mWebViewBundle != null) {
+			mWebView.restoreState(mWebViewBundle);
+		}
 		Point p = getWindowSize();
 		cursor = new Cursor(p.x, p.y);
 		mViewBottom.setY(cursor.getDisplaySize().y * 2 / 3);
@@ -560,4 +582,16 @@ public class CustomWebViewFragment extends Fragment {
 	public void setIsHistoryTransfer(boolean b) {
 		isHistoryTransfer = b;
 	}
+	/**
+	 * Viewの状態を保存する
+	 */
+	public void save() {
+		if (mWebView != null) {
+			mWebViewBundle = new Bundle();
+			mWebViewBundle.putInt("x", mWebView.getScrollX());
+			mWebViewBundle.putInt("y", mWebView.getScrollY());
+			mWebView.saveState(mWebViewBundle);
+		}
+	}
+
 }
