@@ -98,11 +98,11 @@ public class MainActivity extends FragmentActivity {
 			public void onPageSelected(int position) {
 				Log.d("position", "" + position);
 				super.onPageSelected(position);
-//				if (currentPosition < adapter.getCount()) {
-//					WebView v = adapter.get(currentPosition).getWebView();
-//					setScrollList(currentPosition, v.getScrollX(), v.getScrollY());
-//				}
-//				restoreScrollPosition(position);
+
+				if (currentPosition < adapter.getCount()) {
+					Log.d("TAG", "save");
+					adapter.get(currentPosition).save();
+				}
 				currentPosition = position;
 				sp.edit().putInt("last", position).commit(); // こう書かないとcommitされない
 				CustomWebViewFragment f = adapter.get(currentPosition);
