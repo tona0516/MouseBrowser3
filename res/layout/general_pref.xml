@@ -17,5 +17,13 @@
         android:inputType="text"
         android:key="homepage"
         android:title="ホームページの設定" />
+
+    <ListPreference
+        android:dialogTitle="変更"
+        android:entries="@array/textsize"
+        android:entryValues="@array/textsize_values"
+        android:key="textsize"
+        android:summary="文字サイズを変更します"
+        android:title="文字サイズ" />
 
 </PreferenceScreen>

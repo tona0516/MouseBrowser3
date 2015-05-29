@@ -39,6 +39,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
+import android.webkit.WebSettings.TextSize;
 import android.webkit.WebView;
 import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
@@ -79,7 +80,6 @@ public class CustomWebViewFragment extends Fragment {
 
 	private String mUrl = null;
 	private Bundle mWebViewBundle;
-	private CustomWebViewFragment me;
 
 	public CustomWebViewFragment(String url) {
 		this.mUrl = url;
@@ -88,7 +88,7 @@ public class CustomWebViewFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment0, null);
 		pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		me = this;
+
 		initComponent(v);
 		initWebView(v);
 		return v;
@@ -244,9 +244,9 @@ public class CustomWebViewFragment extends Fragment {
 						alertDlg.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
-								AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+								AsyncTask<String, Void, Boolean> task = new AsyncTask<String, Void, Boolean>() {
 									@Override
-									protected Boolean doInBackground(Void[] params) {
+									protected Boolean doInBackground(String... params) {
 										return onDownload(htr.getExtra());
 									}
 									protected boolean onDownload(String url) {
@@ -256,6 +256,7 @@ public class CustomWebViewFragment extends Fragment {
 												root.mkdir();
 											}
 
+											// 現在時刻をファイル名とする
 											Date mDate = new Date();
 											SimpleDateFormat fileNameDate = new SimpleDateFormat("yyyyMMdd_HHmmss");
 											String fileName = fileNameDate.format(mDate) + ".jpg";
@@ -433,16 +434,9 @@ public class CustomWebViewFragment extends Fragment {
 	public void onResume() {
 		super.onResume();
 		Log.d("LifeCycle", "onResume");
-		if (mWebViewBundle != null) {
-			Log.d("TAG", "restore");
-			mWebView.restoreState(mWebViewBundle);
-		}
-		if (isFirstView) {
-			Log.d("LifeCycle", "onResume");
-			Point p = getWindowSize();
-			cursor = new Cursor(p.x, p.y);
-			mViewBottom.setY(cursor.getDisplaySize().y * 2 / 3);
-		}
+		Point p = getWindowSize();
+		cursor = new Cursor(p.x, p.y);
+		mViewBottom.setY(cursor.getDisplaySize().y * 2 / 3);
 		readPreference();
 		switchViewCursorRange();
 		createCursorImage();
@@ -472,9 +466,9 @@ public class CustomWebViewFragment extends Fragment {
 		} else {
 			mWebView.clearCache(true);
 		}
-
+		int textsize = Integer.parseInt(pref.getString("textsize", "100"));
+		mWebView.getSettings().setTextZoom(textsize);
 	}
-
 	@Override
 	public void onStop() {
 		super.onStop();
@@ -521,9 +515,9 @@ public class CustomWebViewFragment extends Fragment {
 
 	/**
 	 * クリック位置を表示するView
-	 * 
+	 *
 	 * @author meem
-	 * 
+	 *
 	 */
 	private class PointerView extends View {
 		Paint paint;
@@ -566,10 +560,4 @@ public class CustomWebViewFragment extends Fragment {
 	public void setIsHistoryTransfer(boolean b) {
 		isHistoryTransfer = b;
 	}
-
-	public void save() {
-		mWebViewBundle = new Bundle();
-		mWebView.saveState(mWebViewBundle);
-	}
-
 }
